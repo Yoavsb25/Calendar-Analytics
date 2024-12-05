@@ -1,20 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %}Login | Calendar Report{% endblock %}
-{% block header_title %}Welcome to Calendar Analytics{% endblock %}
+{% block title %}Login | Calendar Analytics{% endblock %}
 
 {% block content %}
-    <div class="login-container">
-        <div class="login-card">
-            <div class="login-icon">
-                <i data-feather="log-in"></i>
+<div class="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+    <div class="w-full max-w-md">
+        <div class="bg-white rounded-3xl shadow-large p-8 space-y-6 border border-neutral-100 animate-fade-in">
+            <div class="text-center">
+                <div class="mx-auto w-24 h-24 bg-primary-50 rounded-full flex items-center justify-center mb-6 animate-subtle-bounce">
+                    <i data-feather="log-in" class="w-12 h-12 text-primary-500"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-neutral-800 mb-2">Welcome Back</h2>
+                <p class="text-neutral-500 mb-6">Sign in to access your calendar insights</p>
             </div>
-            <h2>Login</h2>
-            <p>Connect your Google Calendar to generate insights</p>
-            <a href="{{ url_for('google.login') }}" class="btn btn-primary">
-                <i data-feather="google"></i>
-                Login with Google
-            </a>
+
+            <div class="space-y-4">
+                <a href="{{ url_for('google.login') }}" class="w-full flex items-center justify-center
+                    bg-primary-500 text-white font-semibold py-3 px-4 rounded-xl
+                    hover:bg-primary-600 transition-all duration-300
+                    focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+                    group">
+                    <i data-feather="google" class="mr-3 w-5 h-5 group-hover:animate-pulse"></i>
+                    Continue with Google
+                </a>
+            </div>
         </div>
     </div>
+</div>
 {% endblock %}

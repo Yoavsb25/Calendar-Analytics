@@ -1,31 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Calendar Report{% endblock %}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <title>{% block title %}Calendar Analytics{% endblock %}</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link href="/static/css/output.css" rel="stylesheet">
 </head>
-<body>
-    <div class="app-container">
-        <header class="main-header">
-            <div class="logo">
-                <i data-feather="calendar" class="logo-icon"></i>
-                <h1>{% block header_title %}Calendar Report{% endblock %}</h1>
+<body class="font-sans antialiased text-neutral-800 bg-neutral-50 h-full">
+    <div class="min-h-full flex flex-col">
+        <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md shadow-soft">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-primary-50 p-2 rounded-xl">
+                        <i data-feather="calendar" class="w-6 h-6 text-primary-500"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-neutral-800 tracking-tight">
+                        {% block header_title %}Calendar Analytics{% endblock %}
+                    </h1>
+                </div>
+                {% block header_additional %}{% endblock %}
             </div>
-            {% block header_additional %}{% endblock %}
         </header>
-        <main class="main-content">
+
+        <main class="flex-1 container mx-auto px-4 py-8 animate-fade-in">
             {% block content %}{% endblock %}
         </main>
-        <footer class="main-footer">
-            <p>&copy; {{ current_year }} Calendar Analytics</p>
+
+        <footer class="bg-neutral-100 py-6">
+            <div class="container mx-auto px-4 text-center text-neutral-500">
+                <p>&copy; {{ current_year }} Calendar Analytics. All rights reserved.</p>
+            </div>
         </footer>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             feather.replace();

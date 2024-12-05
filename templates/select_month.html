@@ -1,32 +1,60 @@
 {% extends "base.html" %}
 
-{% block title %}Select Month | Calendar Report{% endblock %}
-{% block header_title %}Generate Calendar Insights{% endblock %}
+{% block title %}Select Month | Calendar Analytics{% endblock %}
 
 {% block content %}
-    <div class="month-select-container">
-        <div class="month-select-card">
-            <h2>Choose Reporting Period</h2>
-            <form action="/generate-report" method="post" class="month-form">
-                <div class="form-group">
-                    <label for="month">Select Month:</label>
-                    <div class="select-wrapper">
-                        <select name="month" id="month" required>
-                            <option value="">Select a Month</option>
-                            {% for month_num in range(1, 13) %}
-                                <option value="{{ month_num }}">
-                                    {{ ['January', 'February', 'March', 'April', 'May', 'June', 
-                                        'July', 'August', 'September', 'October', 'November', 'December'][month_num-1] }}
-                                </option>
-                            {% endfor %}
-                        </select>
+<div class="max-w-2xl mx-auto space-y-8">
+    <div class="bg-white rounded-3xl shadow-large p-8 border border-neutral-100 animate-fade-in">
+        <div class="text-center mb-8">
+            <div class="mx-auto w-24 h-24 bg-secondary-50 rounded-full flex items-center justify-center mb-6 animate-subtle-bounce">
+                <i data-feather="calendar" class="w-12 h-12 text-secondary-500"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-neutral-800 mb-3">Generate Insights</h2>
+            <p class="text-neutral-500">Select the reporting period for your calendar data</p>
+        </div>
+
+        <form action="/generate-report" method="post" class="space-y-6">
+            <div>
+                <label for="month" class="block text-sm font-medium text-neutral-700 mb-2">
+                    Select Month
+                </label>
+                <div class="relative">
+                    <select
+                        name="month"
+                        id="month"
+                        required
+                        class="w-full appearance-none bg-neutral-50 border border-neutral-200
+                        rounded-xl py-3 px-4 pr-8 text-neutral-800
+                        focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+                        transition-all duration-300"
+                    >
+                        <option value="">Choose a month</option>
+                        {% for month_num in range(1, 13) %}
+                            <option value="{{ month_num }}">
+                                {{ ['January', 'February', 'March', 'April', 'May', 'June',
+                                    'July', 'August', 'September', 'October', 'November', 'December'][month_num-1] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-neutral-400">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">
-                    Generate Report
-                    <i data-feather="arrow-right"></i>
-                </button>
-            </form>
-        </div>
+            </div>
+
+            <button
+                type="submit"
+                class="w-full bg-primary-500 text-white font-semibold py-3 px-4 rounded-xl
+                hover:bg-primary-600 transition-all duration-300
+                focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+                flex items-center justify-center group"
+            >
+                Generate Report
+                <i data-feather="arrow-right" class="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </form>
     </div>
+</div>
 {% endblock %}

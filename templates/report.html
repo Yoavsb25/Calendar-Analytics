@@ -5,85 +5,96 @@
     'July', 'August', 'September', 'October', 'November', 'December'][month-1] }} {{ year }}{% endblock %}
 
 {% block content %}
-    <div class="report-container">
+    <div class="space-y-8">
         {% if events %}
-            <div class="stats-overview">
-                <div class="stat-card total-events">
-                    <div class="stat-icon">
-                        <i data-feather="calendar"></i>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-3xl shadow-large p-6 border border-neutral-100 flex items-center space-x-4 animate-fade-in">
+                    <div class="bg-primary-50 p-3 rounded-xl">
+                        <i data-feather="calendar" class="w-6 h-6 text-primary-500"></i>
                     </div>
-                    <div class="stat-content">
-                        <h3>{{ events|length }}</h3>
-                        <p>Total Unique Events</p>
+                    <div>
+                        <p class="text-neutral-500 text-sm mb-1">Total Unique Events</p>
+                        <h3 class="text-2xl font-bold text-neutral-800">{{ events|length }}</h3>
                     </div>
                 </div>
-                <div class="stat-card total-revenue">
-                    <div class="stat-icon">
-                        <i data-feather="dollar-sign"></i>
+                <div class="bg-white rounded-3xl shadow-large p-6 border border-neutral-100 flex items-center space-x-4 animate-fade-in delay-100">
+                    <div class="bg-green-50 p-3 rounded-xl">
+                        <i data-feather="dollar-sign" class="w-6 h-6 text-green-600"></i>
                     </div>
-                    <div class="stat-content">
-                        <h3>${{ events|map(attribute='total')|sum|round(2) }}</h3>
-                        <p>Total Revenue</p>
+                    <div>
+                        <p class="text-neutral-500 text-sm mb-1">Total Revenue</p>
+                        <h3 class="text-2xl font-bold text-green-700">${{ events|map(attribute='total')|sum|round(2) }}</h3>
                     </div>
                 </div>
             </div>
 
-            <form method="POST" action="{{ url_for('save_report') }}" id="event-report-form">
-                <div class="events-table-container">
-                    <table class="events-table">
-                        <thead>
+            <form method="POST" action="{{ url_for('save_report') }}" id="event-report-form"
+                  class="bg-white rounded-3xl shadow-large p-6 border border-neutral-100 animate-fade-in">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-neutral-50">
                             <tr>
-                                <th>Event Name</th>
-                                <th>Number of Meetings</th>
-                                <th>Price per Meeting</th>
-                                <th>Total</th>
+                                <th class="p-4 text-xs font-medium text-neutral-500 uppercase tracking-wider">Event Name</th>
+                                <th class="p-4 text-xs font-medium text-neutral-500 uppercase tracking-wider text-center">Number of Meetings</th>
+                                <th class="p-4 text-xs font-medium text-neutral-500 uppercase tracking-wider text-center">Price per Meeting</th>
+                                <th class="p-4 text-xs font-medium text-neutral-500 uppercase tracking-wider text-right">Total</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-neutral-200">
                             {% for event in events|sort(attribute='count', reverse=true) %}
-                            <tr>
-                                <td>{{ event.name }}</td>
-                                <td>{{ event.count }}</td>
-                                <td>
-                                    <input type="number"
+                            <tr class="hover:bg-neutral-50 transition-colors duration-200">
+                                <td class="p-4 font-medium text-neutral-800">{{ event.name }}</td>
+                                <td class="p-4 text-neutral-600 text-center">{{ event.count }}</td>
+                                <td class="p-4 text-center">
+                                    <input type="text"
                                            name="price_{{ loop.index0 }}"
                                            value="{{ event.price|round(2) }}"
-                                           step="0.01"
-                                           min="0"
-                                           class="price-input"
+                                           class="w-24 border border-neutral-300 rounded-xl px-2 py-1
+                                                  focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+                                                  transition-all text-center"
                                            onchange="updateTotal(this)"
                                            data-index="{{ loop.index0 }}"
                                     >
                                 </td>
-                                <td class="total-cell">${{ (event.count * event.price)|round(2) }}</td>
-                                <!-- Add hidden input for the event name -->
+                                <td class="p-4 font-medium text-green-700 text-right total-cell">${{ (event.count * event.price)|round(2) }}</td>
                                 <input type="hidden" name="event_name_{{ loop.index0 }}" value="{{ event.name }}">
                                 <input type="hidden" name="count_{{ loop.index0 }}" value="{{ event.count }}">
                             </tr>
-
                             {% endfor %}
                         </tbody>
                         <tfoot>
-                            <tr>
-                                <td colspan="3">Total Revenue</td>
-                                <td id="grand-total">${{ events|map(attribute='total')|sum|round(2) }}</td>
+                            <tr class="bg-neutral-50">
+                                <td colspan="3" class="p-4 text-right font-bold text-neutral-800">Total Revenue</td>
+                                <td id="grand-total" class="p-4 font-bold text-right text-green-700">${{ events|map(attribute='total')|sum|round(2) }}</td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-                <input type="hidden" name="month" value="{{ month }}">
-                <input type="hidden" name="year" value="{{ year }}">
-                <button type="submit" class="btn btn-primary mt-3">Save Report</button>
+
+                <div class="mt-6 flex justify-end">
+                    <input type="hidden" name="month" value="{{ month }}">
+                    <input type="hidden" name="year" value="{{ year }}">
+                    <button type="submit"
+                            class="bg-primary-500 text-white font-semibold py-3 px-6 rounded-xl
+                                   hover:bg-primary-600 transition-all duration-300
+                                   focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+                                   flex items-center justify-center group">
+                        Save Report
+                        <i data-feather="save" class="ml-3 w-5 h-5 group-hover:animate-pulse"></i>
+                    </button>
+                </div>
             </form>
+
         {% else %}
-            <div class="no-events">
-                <i data-feather="calendar-off" class="no-events-icon"></i>
-                <h2>No Events Found</h2>
-                <p>There are no events scheduled for this month.</p>
+            <div class="text-center bg-white rounded-3xl shadow-large p-12 border border-neutral-100 animate-fade-in">
+                <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-secondary-50 mb-6">
+                    <i data-feather="calendar-off" class="w-12 h-12 text-secondary-500"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-neutral-800 mb-4">No Events Found</h2>
+                <p class="text-neutral-500">There are no events scheduled for this month.</p>
             </div>
         {% endif %}
     </div>
-
     <script>
     // Prevent form submission on Enter
     document.getElementById('event-report-form').addEventListener('keydown', function(event) {
@@ -93,37 +104,35 @@
     });
 
     // Function to dynamically update totals
-    function updateTotal(priceInput) {
-        const row = priceInput.closest('tr');
+function updateTotal(priceInput) {
+    const row = priceInput.closest('tr');
 
-        // Get the number of meetings from the second column and parse it as a number
-        const meetingCount = parseFloat(row.querySelector('td:nth-child(2)').textContent) || 0;
+    // Get the number of meetings from the second column and parse it as a number
+    const meetingCount = parseFloat(row.querySelector('td:nth-child(2)').textContent) || 0;
 
-        // Get the price from the input and parse it
-        const price = parseFloat(priceInput.value) || 0;
+    // Get the price from the input and parse it
+    const price = parseFloat(priceInput.value) || 0;
 
-        // Calculate the row total
-        const total = (meetingCount * price).toFixed(2);
+    // Calculate the row total
+    const total = (meetingCount * price).toFixed(2);
 
-        // Update the row's total cell
-        const totalCell = row.querySelector('.total-cell');
-        totalCell.textContent = `$${total}`;
+    // Update the row's total cell
+    const totalCell = row.querySelector('.total-cell');
+    totalCell.textContent = `$${total}`;
 
-        // Recalculate the grand total from all rows
-        const totalCells = document.querySelectorAll('.total-cell');
-        const grandTotal = Array.from(totalCells).reduce((sum, cell) => {
-            return sum + parseFloat(cell.textContent.replace('$', '')) || 0;
-        }, 0);
+    // Recalculate the grand total from all rows
+    const totalCells = document.querySelectorAll('.total-cell');
+    const grandTotal = Array.from(totalCells).reduce((sum, cell) => {
+        return sum + parseFloat(cell.textContent.replace('$', '')) || 0;
+    }, 0);
 
-        // Update the grand total in the table footer
-        document.getElementById('grand-total').textContent = `$${grandTotal.toFixed(2)}`;
+    // Update the grand total in the table footer
+    document.getElementById('grand-total').textContent = `$${grandTotal.toFixed(2)}`;
 
-        // Update the box total revenue
-        const totalRevenueBox = document.querySelector('.stat-card.total-revenue h3');
-        if (totalRevenueBox) {
-            totalRevenueBox.textContent = `$${grandTotal.toFixed(2)}`;
-        }
-    }
+    // Also update the total revenue in the upper section
+    const upperTotal = document.querySelector('.text-green-700');
+    upperTotal.textContent = `$${grandTotal.toFixed(2)}`;
+}
 </script>
 
 {% endblock %}
