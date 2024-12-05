@@ -1,56 +1,44 @@
 # Python
+*.pyc
+*.pyo
+*.pyd
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+*.db
+*.sqlite3
+*.env
 
-# Virtual Environment
-venv/
-env/
-.env/
+# Virtual environment
 .venv/
 
-# Flask
-instance/
-.webassets-cache
+# Node.js
+node_modules/
 
-# OAuth and Secret Keys
-*.env
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Build output
+/dist
+/build
+/static/css/* # Tailwind CSS generated files (if not using them in your repo)
+static/js/
 
 # Logs
 *.log
-logs/
 
-# IDE and Editor files
+# Credentials (Security)
+client_secret_657802434191-hkm4bqm4vdq2omm864v2mjcdbha4csqb.apps.goog
+
+# IDEs and Editors
 .idea/
 .vscode/
-*.swp
-*.swo
-*~
 
-# OS Generated Files
+# Operating System Files
 .DS_Store
 Thumbs.db
 
-node_modules/
+# Python packaging
+*.egg
+*.egg-info
+*.dist-info
+
+
+# Other unnecessary files
+Scratches and Consoles/
+
