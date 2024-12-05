@@ -117,7 +117,7 @@ def generate_report():
             end_date = datetime(selected_year + 1, 1, 1, 0, 0, 0).isoformat() + 'Z'
         else:
             start_date = datetime(selected_year, int(selected_month), 1, 0, 0, 0).isoformat() + 'Z'
-            if selected_month == '12':
+            if selected_month == 12:
                 end_date = datetime(selected_year + 1, 1, 1, 0, 0, 0).isoformat() + 'Z'
             else:
                 end_date = datetime(selected_year, int(selected_month) + 1, 1, 0, 0, 0).isoformat() + 'Z'
