@@ -1,10 +1,62 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Event Report | {{ month }}/{{ year }}{% endblock %}
+{% block header_title %}Event Insights: {{ ['January', 'February', 'March', 'April', 'May', 'June', 
+    'July', 'August', 'September', 'October', 'November', 'December'][month-1] }} {{ year }}{% endblock %}
+
+{% block content %}
+    <div class="report-container">
+        {% if events %}
+            <div class="stats-overview">
+                <div class="stat-card total-events">
+                    <div class="stat-icon">
+                        <i data-feather="calendar"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ events|length }}</h3>
+                        <p>Total Unique Events</p>
+                    </div>
+                </div>
+                <div class="stat-card most-frequent">
+                    <div class="stat-icon">
+                        <i data-feather="trending-up"></i>
+                    </div>
+                    <div class="stat-content">
+                        {% set most_frequent_event = events|dictsort(false, 'value')|last %}
+                        <h3>{{ most_frequent_event[0] }}</h3>
+                        <p>Most Recurring Event</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="events-table-container">
+                <table class="events-table">
+                    <thead>
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Number of Meetings</th>
+                            <th>Frequency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for name, count in events|dictsort(false, 'value')|reverse %}
+                        <tr>
+                            <td>{{ name }}</td>
+                            <td>{{ count }}</td>
+                            <td>
+                                <div class="frequency-bar" style="width: {{ (count / events.values()|max) * 100 }}%"></div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="no-events">
+                <i data-feather="calendar-off" class="no-events-icon"></i>
+                <h2>No Events Found</h2>
+                <p>There are no events scheduled for this month.</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

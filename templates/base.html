@@ -1,10 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Calendar Report{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 </head>
 <body>
-$END$
+    <div class="app-container">
+        <header class="main-header">
+            <div class="logo">
+                <i data-feather="calendar" class="logo-icon"></i>
+                <h1>{% block header_title %}Calendar Report{% endblock %}</h1>
+            </div>
+            {% block header_additional %}{% endblock %}
+        </header>
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+        <footer class="main-footer">
+            <p>&copy; {{ current_year }} Calendar Analytics</p>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+        });
+    </script>
 </body>
 </html>
