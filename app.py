@@ -5,6 +5,9 @@ from flask_dance.contrib.google import make_google_blueprint, google
 from googleapiclient.discovery import build
 from datetime import datetime
 import os
+import csv
+from flask import send_file
+import io
 from dotenv import load_dotenv
 import logging
 
@@ -98,8 +101,8 @@ def generate_report():
             token=token['access_token'],
             refresh_token=token.get('refresh_token'),
             token_uri='https://oauth2.googleapis.com/token',
-            client_id='657802434191-hkm4bqm4vdq2omm864v2mjcdbha4csqb.apps.googleusercontent.com',
-            client_secret='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'
+            client_id=os.getenv('GOOGLE_CLIENT_ID'),
+            client_secret=os.getenv('GOOGLE_CLIENT_SECRET')
         )
 
         # Handle selected month
@@ -132,13 +135,81 @@ def generate_report():
             event_name = event.get("summary", "Untitled Event")
             event_counts[event_name] = event_counts.get(event_name, 0) + 1
 
-        logging.info(f"Unique events in {month}-{current_year}: {event_counts}")
-        return render_template("report.html", events=event_counts, month=month, year=current_year)
+        # Create a list of events with count and default price
+        event_details = []
+        for event_name, count in sorted(event_counts.items(), key=lambda x: x[1], reverse=True):
+            event_details.append({
+                'name': event_name,
+                'count': count,
+                'price': 0.0,  # Default price
+                'total': 0.0   # Default total
+            })
+
+        logging.info(f"Unique events in {month}-{current_year}: {event_details}")
+        return render_template("report.html",
+                               events=event_details,
+                               month=month,
+                               year=current_year,
+                               editable=True)
 
     except Exception as e:
         logging.error(f"Error generating report: {e}", exc_info=True)
         flash('Report generation failed. Please try again.', category='error')
         return redirect(url_for("select_month"))
 
+
+@app.route("/save-report", methods=["POST"])
+def save_report():
+    if not google.authorized:
+        return redirect(url_for("google.login"))
+
+    # Capture form data
+    month = request.form.get('month')
+    year = request.form.get('year')
+
+    # Collect event details
+    event_details = []
+    for i in range(len(request.form)):
+        try:
+            price_key = f'price_{i}'
+            if price_key in request.form:
+                event_name = request.form.get(f'event_name_{i}', 'Unknown')
+                count = int(request.form.get(f'count_{i}', 0))
+                price = float(request.form.get(price_key, 0))
+                total = count * price
+
+                event_details.append({
+                    'Event Name': event_name,
+                    'Number of Meetings': count,
+                    'Price per Meeting': f'${price:.2f}',
+                    'Total Revenue': f'${total:.2f}'
+                })
+        except Exception as e:
+            logging.error(f"Error processing event {i}: {e}")
+
+    # Generate CSV in memory
+    output = io.StringIO()
+    fieldnames = ['Event Name', 'Number of Meetings', 'Price per Meeting', 'Total Revenue']
+    writer = csv.DictWriter(output, fieldnames=fieldnames)
+
+    # Write headers and rows
+    writer.writeheader()
+    writer.writerows(event_details)
+
+    # Calculate grand total
+    grand_total = sum(float(item['Total Revenue'].replace('$', '')) for item in event_details)
+    writer.writerow({
+        'Event Name': 'Grand Total',
+        'Total Revenue': f'${grand_total:.2f}'
+    })
+
+    # Prepare CSV for download
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'event_report_{month}_{year}.csv'
+    )
 if __name__ == "__main__":
     app.run(debug=True)

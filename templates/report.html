@@ -17,40 +17,62 @@
                         <p>Total Unique Events</p>
                     </div>
                 </div>
-                <div class="stat-card most-frequent">
+                <div class="stat-card total-revenue">
                     <div class="stat-icon">
-                        <i data-feather="trending-up"></i>
+                        <i data-feather="dollar-sign"></i>
                     </div>
                     <div class="stat-content">
-                        {% set most_frequent_event = events|dictsort(false, 'value')|last %}
-                        <h3>{{ most_frequent_event[0] }}</h3>
-                        <p>Most Recurring Event</p>
+                        <h3>${{ events|map(attribute='total')|sum|round(2) }}</h3>
+                        <p>Total Revenue</p>
                     </div>
                 </div>
             </div>
 
-            <div class="events-table-container">
-                <table class="events-table">
-                    <thead>
-                        <tr>
-                            <th>Event Name</th>
-                            <th>Number of Meetings</th>
-                            <th>Frequency</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for name, count in events|dictsort(false, 'value')|reverse %}
-                        <tr>
-                            <td>{{ name }}</td>
-                            <td>{{ count }}</td>
-                            <td>
-                                <div class="frequency-bar" style="width: {{ (count / events.values()|max) * 100 }}%"></div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            <form method="POST" action="{{ url_for('save_report') }}" id="event-report-form">
+                <div class="events-table-container">
+                    <table class="events-table">
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Number of Meetings</th>
+                                <th>Price per Meeting</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                            <tr>
+                                <input type="hidden" name="event_name_{{ loop.index0 }}" value="{{ event.name }}">
+                                <input type="hidden" name="count_{{ loop.index0 }}" value="{{ event.count }}">
+                                <td>{{ event.name }}</td>
+                                <td>{{ event.count }}</td>
+                                <td>
+                                    <input type="number"
+                                           name="price_{{ loop.index0 }}"
+                                           value="{{ event.price|round(2) }}"
+                                           step="0.01"
+                                           min="0"
+                                           class="price-input"
+                                           onchange="updateTotal(this)"
+                                           data-index="{{ loop.index0 }}"
+                                    >
+                                </td>
+                                <td class="total-cell">${{ (event.count * event.price)|round(2) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3">Total Revenue</td>
+                                <td id="grand-total">${{ events|map(attribute='total')|sum|round(2) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <input type="hidden" name="month" value="{{ month }}">
+                <input type="hidden" name="year" value="{{ year }}">
+                <button type="submit" class="btn btn-primary mt-3">Save Report</button>
+            </form>
         {% else %}
             <div class="no-events">
                 <i data-feather="calendar-off" class="no-events-icon"></i>
@@ -59,4 +81,23 @@
             </div>
         {% endif %}
     </div>
+
+    <script>
+        function updateTotal(priceInput) {
+            const row = priceInput.closest('tr');
+            const meetingCount = row.querySelector('td:nth-child(2)').textContent;
+            const totalCell = row.querySelector('.total-cell');
+            const price = parseFloat(priceInput.value) || 0;
+            const total = (meetingCount * price).toFixed(2);
+
+            totalCell.textContent = '$' + total;
+
+            // Update grand total
+            const totalCells = document.querySelectorAll('.total-cell');
+            const grandTotal = Array.from(totalCells)
+                .reduce((sum, cell) => sum + parseFloat(cell.textContent.replace('$', '')), 0);
+
+            document.getElementById('grand-total').textContent = '$' + grandTotal.toFixed(2);
+        }
+    </script>
 {% endblock %}
