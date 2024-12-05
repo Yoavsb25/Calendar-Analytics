@@ -56,7 +56,11 @@
                                     >
                                 </td>
                                 <td class="total-cell">${{ (event.count * event.price)|round(2) }}</td>
+                                <!-- Add hidden input for the event name -->
+                                <input type="hidden" name="event_name_{{ loop.index0 }}" value="{{ event.name }}">
+                                <input type="hidden" name="count_{{ loop.index0 }}" value="{{ event.count }}">
                             </tr>
+
                             {% endfor %}
                         </tbody>
                         <tfoot>
