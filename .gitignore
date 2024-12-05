@@ -42,3 +42,4 @@ Thumbs.db
 # Other unnecessary files
 Scratches and Consoles/
 
+*.json
