@@ -79,11 +79,13 @@ def authorized():
         logging.error(f"Detailed authorization error: {e}", exc_info=True)
         flash(f'Authorization error: {str(e)}', category='error')
         return redirect(url_for("index"))
+
 @app.route("/select-month")
 def select_month():
     if not google.authorized:
         return redirect(url_for("google.login"))
-    return render_template("select_month.html")
+    selected_year = datetime.now().year
+    return render_template("select_month.html", selected_year=selected_year)
 
 
 @app.route("/generate-report", methods=["POST"])
@@ -105,19 +107,20 @@ def generate_report():
             client_secret=os.getenv('GOOGLE_CLIENT_SECRET')
         )
 
-        # Handle selected month
-        selected_month = request.form["month"]
-        current_year = datetime.now().year
-        month = int(selected_month)
+        # Handle selected month and year
+        selected_month = int(request.form["month"])
+        selected_year = int(request.form["year"])
 
-        # Set start date to the first of the month at midnight
-        start_date = datetime(current_year, month, 1, 0, 0, 0).isoformat() + 'Z'
-
-        # Set end date to the last day of the month at 23:59:59
-        if month == 12:
-            end_date = datetime(current_year + 1, 1, 1, 0, 0, 0).isoformat() + 'Z'
+        # Set start and end dates based on selected month or whole year
+        if selected_month == 13:
+            start_date = datetime(selected_year, 1, 1, 0, 0, 0).isoformat() + 'Z'
+            end_date = datetime(selected_year + 1, 1, 1, 0, 0, 0).isoformat() + 'Z'
         else:
-            end_date = datetime(current_year, month + 1, 1, 0, 0, 0).isoformat() + 'Z'
+            start_date = datetime(selected_year, int(selected_month), 1, 0, 0, 0).isoformat() + 'Z'
+            if selected_month == '12':
+                end_date = datetime(selected_year + 1, 1, 1, 0, 0, 0).isoformat() + 'Z'
+            else:
+                end_date = datetime(selected_year, int(selected_month) + 1, 1, 0, 0, 0).isoformat() + 'Z'
 
         # Make API call to Google Calendar
         service = build("calendar", "v3", credentials=credentials)
@@ -142,21 +145,20 @@ def generate_report():
                 'name': event_name,
                 'count': count,
                 'price': 0.0,  # Default price
-                'total': 0.0   # Default total
+                'total': 0.0  # Default total
             })
 
-        logging.info(f"Unique events in {month}-{current_year}: {event_details}")
+        logging.info(f"Unique events in {selected_month}-{selected_year}: {event_details}")
         return render_template("report.html",
                                events=event_details,
-                               month=month,
-                               year=current_year,
+                               month=selected_month,
+                               year=selected_year,
                                editable=True)
 
     except Exception as e:
         logging.error(f"Error generating report: {e}", exc_info=True)
         flash('Report generation failed. Please try again.', category='error')
         return redirect(url_for("select_month"))
-
 
 @app.route("/save-report", methods=["POST"])
 def save_report():
