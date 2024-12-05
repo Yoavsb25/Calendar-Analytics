@@ -211,5 +211,6 @@ def save_report():
         as_attachment=True,
         download_name=f'event_report_{month}_{year}.csv'
     )
+
 if __name__ == "__main__":
     app.run(debug=True)

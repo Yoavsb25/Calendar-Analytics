@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Event Report | {{ month }}/{{ year }}{% endblock %}
-{% block header_title %}Event Insights: {{ ['January', 'February', 'March', 'April', 'May', 'June', 
+{% block header_title %}Event Insights: {{ ['January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'][month-1] }} {{ year }}{% endblock %}
 
 {% block content %}
@@ -40,10 +40,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for event in events %}
+                            {% for event in events|sort(attribute='count', reverse=true) %}
                             <tr>
-                                <input type="hidden" name="event_name_{{ loop.index0 }}" value="{{ event.name }}">
-                                <input type="hidden" name="count_{{ loop.index0 }}" value="{{ event.count }}">
                                 <td>{{ event.name }}</td>
                                 <td>{{ event.count }}</td>
                                 <td>
@@ -83,21 +81,45 @@
     </div>
 
     <script>
-        function updateTotal(priceInput) {
-            const row = priceInput.closest('tr');
-            const meetingCount = row.querySelector('td:nth-child(2)').textContent;
-            const totalCell = row.querySelector('.total-cell');
-            const price = parseFloat(priceInput.value) || 0;
-            const total = (meetingCount * price).toFixed(2);
-
-            totalCell.textContent = '$' + total;
-
-            // Update grand total
-            const totalCells = document.querySelectorAll('.total-cell');
-            const grandTotal = Array.from(totalCells)
-                .reduce((sum, cell) => sum + parseFloat(cell.textContent.replace('$', '')), 0);
-
-            document.getElementById('grand-total').textContent = '$' + grandTotal.toFixed(2);
+    // Prevent form submission on Enter
+    document.getElementById('event-report-form').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
         }
-    </script>
+    });
+
+    // Function to dynamically update totals
+    function updateTotal(priceInput) {
+        const row = priceInput.closest('tr');
+
+        // Get the number of meetings from the second column and parse it as a number
+        const meetingCount = parseFloat(row.querySelector('td:nth-child(2)').textContent) || 0;
+
+        // Get the price from the input and parse it
+        const price = parseFloat(priceInput.value) || 0;
+
+        // Calculate the row total
+        const total = (meetingCount * price).toFixed(2);
+
+        // Update the row's total cell
+        const totalCell = row.querySelector('.total-cell');
+        totalCell.textContent = `$${total}`;
+
+        // Recalculate the grand total from all rows
+        const totalCells = document.querySelectorAll('.total-cell');
+        const grandTotal = Array.from(totalCells).reduce((sum, cell) => {
+            return sum + parseFloat(cell.textContent.replace('$', '')) || 0;
+        }, 0);
+
+        // Update the grand total in the table footer
+        document.getElementById('grand-total').textContent = `$${grandTotal.toFixed(2)}`;
+
+        // Update the box total revenue
+        const totalRevenueBox = document.querySelector('.stat-card.total-revenue h3');
+        if (totalRevenueBox) {
+            totalRevenueBox.textContent = `$${grandTotal.toFixed(2)}`;
+        }
+    }
+</script>
+
 {% endblock %}
