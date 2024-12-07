@@ -10,6 +10,7 @@ from flask import send_file
 import io
 from dotenv import load_dotenv
 import logging
+from google.oauth2.credentials import Credentials
 
 # Load environment variables
 load_dotenv()
@@ -94,19 +95,6 @@ def generate_report():
         return redirect(url_for("google.login"))
 
     try:
-        # Get the OAuth token
-        token = google.token
-
-        # Create credentials from the token
-        from google.oauth2.credentials import Credentials
-        credentials = Credentials(
-            token=token['access_token'],
-            refresh_token=token.get('refresh_token'),
-            token_uri='https://oauth2.googleapis.com/token',
-            client_id=os.getenv('GOOGLE_CLIENT_ID'),
-            client_secret=os.getenv('GOOGLE_CLIENT_SECRET')
-        )
-
         # Handle selected month and year
         selected_month = int(request.form["month"])
         selected_year = int(request.form["year"])
@@ -122,31 +110,39 @@ def generate_report():
             else:
                 end_date = datetime(selected_year, int(selected_month) + 1, 1, 0, 0, 0).isoformat() + 'Z'
 
-        # Make API call to Google Calendar
-        service = build("calendar", "v3", credentials=credentials)
-        events_result = service.events().list(
-            calendarId='primary',
-            timeMin=start_date,
-            timeMax=end_date,
-            singleEvents=True,
-            orderBy="startTime"
-        ).execute()
+        # Make API call to Google Calendar via Flask-Dance's `google` object
+        response = google.get(
+            f"https://www.googleapis.com/calendar/v3/calendars/primary/events",
+            params={
+                "timeMin": start_date,
+                "timeMax": end_date,
+                "singleEvents": True,
+                "orderBy": "startTime"
+            }
+        )
 
-        # Collect unique event names and their meeting counts
+        if not response.ok:
+            logging.error(f"Failed to fetch events: {response.text}")
+            flash("Failed to retrieve calendar events.", category='error')
+            return redirect(url_for("select_month"))
+
+        # Process events from response
+        events_result = response.json()
         event_counts = {}
         for event in events_result.get("items", []):
             event_name = event.get("summary", "Untitled Event")
             event_counts[event_name] = event_counts.get(event_name, 0) + 1
 
         # Create a list of events with count and default price
-        event_details = []
-        for event_name, count in sorted(event_counts.items(), key=lambda x: x[1], reverse=True):
-            event_details.append({
+        event_details = [
+            {
                 'name': event_name,
                 'count': count,
                 'price': 0.0,  # Default price
                 'total': 0.0  # Default total
-            })
+            }
+            for event_name, count in sorted(event_counts.items(), key=lambda x: x[1], reverse=True)
+        ]
 
         logging.info(f"Unique events in {selected_month}-{selected_year}: {event_details}")
         return render_template("report.html",
@@ -159,6 +155,7 @@ def generate_report():
         logging.error(f"Error generating report: {e}", exc_info=True)
         flash('Report generation failed. Please try again.', category='error')
         return redirect(url_for("select_month"))
+
 
 @app.route("/save-report", methods=["POST"])
 def save_report():
