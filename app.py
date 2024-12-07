@@ -186,8 +186,8 @@ def save_report():
         except Exception as e:
             logging.error(f"Error processing event {i}: {e}")
 
-    # Generate CSV in memory
-    output = io.StringIO()
+    # Generate CSV in memory with newline handling
+    output = io.StringIO(newline='')
     fieldnames = ['Event Name', 'Number of Meetings', 'Price per Meeting', 'Total Revenue']
     writer = csv.DictWriter(output, fieldnames=fieldnames)
 
@@ -202,7 +202,7 @@ def save_report():
         'Total Revenue': f'${grand_total:.2f}'
     })
 
-    # Prepare CSV for download
+    # Prepare CSV for download with UTF-8 encoding
     output.seek(0)
     return send_file(
         io.BytesIO(output.getvalue().encode('utf-8')),
@@ -210,6 +210,7 @@ def save_report():
         as_attachment=True,
         download_name=f'event_report_{month}_{year}.csv'
     )
+
 
 if __name__ == "__main__":
     app.run(debug=True)
