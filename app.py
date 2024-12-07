@@ -156,7 +156,6 @@ def generate_report():
         flash('Report generation failed. Please try again.', category='error')
         return redirect(url_for("select_month"))
 
-
 @app.route("/save-report", methods=["POST"])
 def save_report():
     if not google.authorized:
@@ -186,11 +185,9 @@ def save_report():
         except Exception as e:
             logging.error(f"Error processing event {i}: {e}")
 
-    # Create a CSV using universal newlines and platform-independent approach
-    output = io.StringIO(newline='')
+    # Generate CSV in memory
+    output = io.StringIO(newline="")
     fieldnames = ['Event Name', 'Number of Meetings', 'Price per Meeting', 'Total Revenue']
-
-    # Use universal newline mode and consistent encoding
     writer = csv.DictWriter(output, fieldnames=fieldnames, lineterminator='\n')
 
     # Write headers and rows
@@ -204,18 +201,14 @@ def save_report():
         'Total Revenue': f'${grand_total:.2f}'
     })
 
-    # Prepare CSV for download with UTF-8 encoding
+    # Prepare CSV for download
     output.seek(0)
-    csv_content = output.getvalue()
-
-    # Use send_file with BytesIO and explicit UTF-8 encoding
     return send_file(
-        io.BytesIO(csv_content.encode('utf-8')),
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
         mimetype='text/csv',
         as_attachment=True,
         download_name=f'event_report_{month}_{year}.csv'
     )
-
 
 if __name__ == "__main__":
     app.run(debug=True)
