@@ -186,10 +186,12 @@ def save_report():
         except Exception as e:
             logging.error(f"Error processing event {i}: {e}")
 
-    # Generate CSV in memory with newline handling
+    # Create a CSV using universal newlines and platform-independent approach
     output = io.StringIO(newline='')
     fieldnames = ['Event Name', 'Number of Meetings', 'Price per Meeting', 'Total Revenue']
-    writer = csv.DictWriter(output, fieldnames=fieldnames)
+
+    # Use universal newline mode and consistent encoding
+    writer = csv.DictWriter(output, fieldnames=fieldnames, lineterminator='\n')
 
     # Write headers and rows
     writer.writeheader()
@@ -204,8 +206,11 @@ def save_report():
 
     # Prepare CSV for download with UTF-8 encoding
     output.seek(0)
+    csv_content = output.getvalue()
+
+    # Use send_file with BytesIO and explicit UTF-8 encoding
     return send_file(
-        io.BytesIO(output.getvalue().encode('utf-8')),
+        io.BytesIO(csv_content.encode('utf-8')),
         mimetype='text/csv',
         as_attachment=True,
         download_name=f'event_report_{month}_{year}.csv'
