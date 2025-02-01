@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Select Month and Year | Calendar Analytics{% endblock %}
+{% block title %}Select Date Range | Calendar Analytics{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto space-y-8">
@@ -10,65 +10,40 @@
                 <i data-feather="calendar" class="w-12 h-12 text-secondary-500"></i>
             </div>
             <h2 class="text-3xl font-bold text-neutral-800 mb-3">Generate Insights</h2>
-            <p class="text-neutral-500">Select the reporting period for your calendar data</p>
+            <p class="text-neutral-500">Select the date range for your calendar data</p>
         </div>
 
         <form action="/generate-report" method="post" class="space-y-6">
             <div>
-                <label for="month" class="block text-sm font-medium text-neutral-700 mb-2">
-                    Select Month
+                <label for="start_date" class="block text-sm font-medium text-neutral-700 mb-2">
+                    Start Date
                 </label>
-                <div class="relative">
-                    <select
-                        name="month"
-                        id="month"
-                        required
-                        class="w-full appearance-none bg-neutral-50 border border-neutral-200
-                        rounded-xl py-3 px-4 pr-8 text-neutral-800
-                        focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
-                        transition-all duration-300"
-                    >
-                        <option value="">Choose a month</option>
-                        {% for month_num in range(1, 14) %}
-                            <option value="{{ month_num }}">
-                                {{ ['January', 'February', 'March', 'April', 'May', 'June',
-                                    'July', 'August', 'September', 'October', 'November', 'December', 'All'][month_num-1] }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-neutral-400">
-                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                </div>
+                <input
+                    type="date"
+                    name="start_date"
+                    id="start_date"
+                    required
+                    class="w-full appearance-none bg-neutral-50 border border-neutral-200
+                    rounded-xl py-3 px-4 text-neutral-800
+                    focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+                    transition-all duration-300"
+                >
             </div>
 
             <div>
-                <label for="year" class="block text-sm font-medium text-neutral-700 mb-2">
-                    Select Year
+                <label for="end_date" class="block text-sm font-medium text-neutral-700 mb-2">
+                    End Date
                 </label>
-                <div class="relative">
-                    <select
-                        name="year"
-                        id="year"
-                        required
-                        class="w-full appearance-none bg-neutral-50 border border-neutral-200
-                        rounded-xl py-3 px-4 pr-8 text-neutral-800
-                        focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
-                        transition-all duration-300"
-                    >
-                        <option value="">Choose a year</option>
-                        {% for year in range(selected_year - 5, selected_year + 6) %}
-                            <option value="{{ year }}">{{ year }}</option>
-                        {% endfor %}
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-neutral-400">
-                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                </div>
+                <input
+                    type="date"
+                    name="end_date"
+                    id="end_date"
+                    required
+                    class="w-full appearance-none bg-neutral-50 border border-neutral-200
+                    rounded-xl py-3 px-4 text-neutral-800
+                    focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+                    transition-all duration-300"
+                >
             </div>
 
             <button
@@ -84,4 +59,30 @@
         </form>
     </div>
 </div>
+
+<script>
+    // Set default date range (optional)
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        const endDate = today.toISOString().split('T')[0];
+
+        // Set default start date to 30 days ago
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30);
+
+        document.getElementById('start_date').value = startDate.toISOString().split('T')[0];
+        document.getElementById('end_date').value = endDate;
+
+        // Add validation to ensure end date is not before start date
+        document.getElementById('end_date').addEventListener('change', function() {
+            const start = document.getElementById('start_date').value;
+            const end = this.value;
+
+            if (end < start) {
+                alert('End date cannot be before start date');
+                this.value = start;
+            }
+        });
+    });
+</script>
 {% endblock %}

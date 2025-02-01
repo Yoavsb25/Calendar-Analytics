@@ -3,7 +3,7 @@ from flask_dance.consumer import oauth_authorized
 from flask_dance.consumer.storage.session import SessionStorage
 from flask_dance.contrib.google import make_google_blueprint, google
 from googleapiclient.discovery import build
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import csv
 from flask import send_file
@@ -85,8 +85,7 @@ def authorized():
 def select_month():
     if not google.authorized:
         return redirect(url_for("google.login"))
-    selected_year = datetime.now().year
-    return render_template("select_month.html", selected_year=selected_year)
+    return render_template("select_month.html")
 
 
 @app.route("/generate-report", methods=["POST"])
@@ -95,27 +94,23 @@ def generate_report():
         return redirect(url_for("google.login"))
 
     try:
-        # Handle selected month and year
-        selected_month = int(request.form["month"])
-        selected_year = int(request.form["year"])
+        # Get start and end dates from form
+        start_date = datetime.strptime(request.form["start_date"], "%Y-%m-%d")
+        end_date = datetime.strptime(request.form["end_date"], "%Y-%m-%d")
 
-        # Set start and end dates based on selected month or whole year
-        if selected_month == 13:
-            start_date = datetime(selected_year, 1, 1, 0, 0, 0).isoformat() + 'Z'
-            end_date = datetime(selected_year + 1, 1, 1, 0, 0, 0).isoformat() + 'Z'
-        else:
-            start_date = datetime(selected_year, int(selected_month), 1, 0, 0, 0).isoformat() + 'Z'
-            if selected_month == 12:
-                end_date = datetime(selected_year + 1, 1, 1, 0, 0, 0).isoformat() + 'Z'
-            else:
-                end_date = datetime(selected_year, int(selected_month) + 1, 1, 0, 0, 0).isoformat() + 'Z'
+        # Add one day to end_date to include the entire last day
+        end_date = end_date + timedelta(days=1)
 
-        # Make API call to Google Calendar via Flask-Dance's `google` object
+        # Convert to ISO format for Google Calendar API
+        start_date_iso = start_date.isoformat() + 'Z'
+        end_date_iso = end_date.isoformat() + 'Z'
+
+        # Make API call to Google Calendar
         response = google.get(
-            f"https://www.googleapis.com/calendar/v3/calendars/primary/events",
+            "https://www.googleapis.com/calendar/v3/calendars/primary/events",
             params={
-                "timeMin": start_date,
-                "timeMax": end_date,
+                "timeMin": start_date_iso,
+                "timeMax": end_date_iso,
                 "singleEvents": True,
                 "orderBy": "startTime"
             }
@@ -138,17 +133,21 @@ def generate_report():
             {
                 'name': event_name,
                 'count': count,
-                'price': 0.0,  # Default price
-                'total': 0.0  # Default total
+                'price': 0.0,
+                'total': 0.0
             }
             for event_name, count in sorted(event_counts.items(), key=lambda x: x[1], reverse=True)
         ]
 
-        logging.info(f"Unique events in {selected_month}-{selected_year}: {event_details}")
+        # Format dates for display
+        formatted_start = start_date.strftime("%Y-%m-%d")
+        formatted_end = (end_date - timedelta(days=1)).strftime("%Y-%m-%d")
+
+        logging.info(f"Generated report for period {formatted_start} to {formatted_end}")
         return render_template("report.html",
                                events=event_details,
-                               month=selected_month,
-                               year=selected_year,
+                               start_date=formatted_start,
+                               end_date=formatted_end,
                                editable=True)
 
     except Exception as e:
@@ -156,14 +155,15 @@ def generate_report():
         flash('Report generation failed. Please try again.', category='error')
         return redirect(url_for("select_month"))
 
+
 @app.route("/save-report", methods=["POST"])
 def save_report():
     if not google.authorized:
         return redirect(url_for("google.login"))
 
     # Capture form data
-    month = request.form.get('month')
-    year = request.form.get('year')
+    start_date = request.form.get('start_date')
+    end_date = request.form.get('end_date')
 
     # Collect event details
     event_details = []
@@ -207,7 +207,7 @@ def save_report():
         io.BytesIO(output.getvalue().encode('utf-8-sig')),
         mimetype='text/csv',
         as_attachment=True,
-        download_name=f'event_report_{month}_{year}.csv'
+        download_name=f'event_report_{start_date}_{end_date}.csv'
     )
 
 if __name__ == "__main__":

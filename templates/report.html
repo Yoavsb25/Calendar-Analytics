@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Event Report | {{ month }}/{{ year }}{% endblock %}
-{% block header_title %}Event Insights: {{ ['January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'][month-1] }} {{ year }}{% endblock %}
+{% block title %}Event Report | {{ start_date }} to {{ end_date }}{% endblock %}
+{% block header_title %}Event Insights: {{ start_date }} to {{ end_date }}{% endblock %}
 
 {% block content %}
     <div class="space-y-8">
@@ -72,8 +71,8 @@
                 </div>
 
                 <div class="mt-6 flex justify-end">
-                    <input type="hidden" name="month" value="{{ month }}">
-                    <input type="hidden" name="year" value="{{ year }}">
+                    <input type="hidden" name="start_date" value="{{ start_date }}">
+                    <input type="hidden" name="end_date" value="{{ end_date }}">
                     <button type="submit"
                             class="bg-primary-500 text-white font-semibold py-3 px-6 rounded-xl
                                    hover:bg-primary-600 transition-all duration-300
@@ -91,7 +90,7 @@
                     <i data-feather="calendar-off" class="w-12 h-12 text-secondary-500"></i>
                 </div>
                 <h2 class="text-3xl font-bold text-neutral-800 mb-4">No Events Found</h2>
-                <p class="text-neutral-500">There are no events scheduled for this month.</p>
+                <p class="text-neutral-500">There are no events scheduled for this period.</p>
             </div>
         {% endif %}
     </div>
@@ -104,35 +103,35 @@
     });
 
     // Function to dynamically update totals
-function updateTotal(priceInput) {
-    const row = priceInput.closest('tr');
+    function updateTotal(priceInput) {
+        const row = priceInput.closest('tr');
 
-    // Get the number of meetings from the second column and parse it as a number
-    const meetingCount = parseFloat(row.querySelector('td:nth-child(2)').textContent) || 0;
+        // Get the number of meetings from the second column and parse it as a number
+        const meetingCount = parseFloat(row.querySelector('td:nth-child(2)').textContent) || 0;
 
-    // Get the price from the input and parse it
-    const price = parseFloat(priceInput.value) || 0;
+        // Get the price from the input and parse it
+        const price = parseFloat(priceInput.value) || 0;
 
-    // Calculate the row total
-    const total = (meetingCount * price).toFixed(2);
+        // Calculate the row total
+        const total = (meetingCount * price).toFixed(2);
 
-    // Update the row's total cell
-    const totalCell = row.querySelector('.total-cell');
-    totalCell.textContent = `$${total}`;
+        // Update the row's total cell
+        const totalCell = row.querySelector('.total-cell');
+        totalCell.textContent = `$${total}`;
 
-    // Recalculate the grand total from all rows
-    const totalCells = document.querySelectorAll('.total-cell');
-    const grandTotal = Array.from(totalCells).reduce((sum, cell) => {
-        return sum + parseFloat(cell.textContent.replace('$', '')) || 0;
-    }, 0);
+        // Recalculate the grand total from all rows
+        const totalCells = document.querySelectorAll('.total-cell');
+        const grandTotal = Array.from(totalCells).reduce((sum, cell) => {
+            return sum + parseFloat(cell.textContent.replace('$', '')) || 0;
+        }, 0);
 
-    // Update the grand total in the table footer
-    document.getElementById('grand-total').textContent = `$${grandTotal.toFixed(2)}`;
+        // Update the grand total in the table footer
+        document.getElementById('grand-total').textContent = `$${grandTotal.toFixed(2)}`;
 
-    // Also update the total revenue in the upper section
-    const upperTotal = document.querySelector('.text-green-700');
-    upperTotal.textContent = `$${grandTotal.toFixed(2)}`;
-}
-</script>
+        // Also update the total revenue in the upper section
+        const upperTotal = document.querySelector('.text-green-700');
+        upperTotal.textContent = `$${grandTotal.toFixed(2)}`;
+    }
+    </script>
 
 {% endblock %}
