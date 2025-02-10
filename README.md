@@ -1,6 +1,3 @@
-Here's a beautiful and polished README for your GitHub project:
-
----
 
 # Google Calendar Event Analyzer
 
