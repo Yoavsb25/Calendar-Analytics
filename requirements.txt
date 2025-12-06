@@ -4,5 +4,5 @@ google-auth
 google-auth-oauthlib
 google-auth-httplib2
 google-api-python-client
-gunicorn==20.1.0
+gunicorn==22.0.0
 python-dotenv
